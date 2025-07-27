@@ -1,7 +1,9 @@
 package masking
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/haifenghuang/orderedmap"
 	"strings"
 	"testing"
 )
@@ -404,6 +406,34 @@ func TestMaskSensitive(t *testing.T) {
 	result = MaskSensitive(nil)
 	if result != nil {
 		t.Fatalf("expected: %v, got: %v", "nil", result)
+	}
+
+	om := orderedmap.New()
+	if err := json.Unmarshal([]byte(`{
+		"pin": "123456",
+		"retypePin": "123456",
+		"name": "Full Name",
+		"parent": {
+				"pin": "123456",
+				"retypePin": "123456",
+				"name": "Anak 1",
+				"data": null
+			},
+		"children": [
+			{
+				"pin": "123456",
+				"retypePin": "123456",
+				"name": "Anak 1"
+			},
+			{
+				"pin": "123456",
+				"retypePin": "123456",
+				"name": "Anak 2"
+			}
+		]
+	}`), &om); err == nil {
+		result = MaskSensitive(om.String())
+		fmt.Println(result)
 	}
 
 }

@@ -136,16 +136,16 @@ func maskRecursive(val reflect.Value, visited map[uintptr]bool, configs ...*Conf
 			fieldName := field.Name
 			fieldVal := val.Field(i)
 
-			if isSensitiveKey(fieldName, config.MaskingKeys...) && fieldVal.Kind() == reflect.String {
+			if IsSensitiveKey(fieldName, config.MaskingKeys...) && fieldVal.Kind() == reflect.String {
 				newStruct.Field(i).SetString(MaskString(fieldVal.String(), config))
 				continue
 			}
 
-			if isSensitiveKey(fieldName, config.MaskingKeys...) && isInteger(fieldVal.Kind()) {
+			if IsSensitiveKey(fieldName, config.MaskingKeys...) && isInteger(fieldVal.Kind()) {
 				newStruct.Field(i).SetInt(0)
 				continue
 			}
-			if isSensitiveKey(fieldName, config.MaskingKeys...) && isFloat(fieldVal.Kind()) {
+			if IsSensitiveKey(fieldName, config.MaskingKeys...) && isFloat(fieldVal.Kind()) {
 				newStruct.Field(i).SetFloat(0.0)
 				continue
 			}
@@ -172,18 +172,18 @@ func maskRecursive(val reflect.Value, visited map[uintptr]bool, configs ...*Conf
 				}
 				v = v.Elem()
 			}
-			if isSensitiveKey(keyStr, config.MaskingKeys...) && v.Kind() == reflect.String {
+			if IsSensitiveKey(keyStr, config.MaskingKeys...) && v.Kind() == reflect.String {
 				masked := MaskString(v.String(), config)
 				newMap.SetMapIndex(key, reflect.ValueOf(masked))
 				continue
 			}
 
-			if isSensitiveKey(keyStr, config.MaskingKeys...) && isInteger(v.Kind()) {
+			if IsSensitiveKey(keyStr, config.MaskingKeys...) && isInteger(v.Kind()) {
 				newMap.SetMapIndex(key, reflect.ValueOf(0))
 				continue
 			}
 
-			if isSensitiveKey(keyStr, config.MaskingKeys...) && isFloat(v.Kind()) {
+			if IsSensitiveKey(keyStr, config.MaskingKeys...) && isFloat(v.Kind()) {
 				newMap.SetMapIndex(key, reflect.ValueOf(0.0))
 				continue
 			}
@@ -240,7 +240,7 @@ func processOrderedMap(omp *orderedmap.OrderedMap, config *Config) {
 		val, _ := omp.Get(key)
 		switch v := val.(type) {
 		case string:
-			if isSensitiveKey(key, config.MaskingKeys...) {
+			if IsSensitiveKey(key, config.MaskingKeys...) {
 				omp.Set(key, MaskString(v, config))
 			}
 
@@ -274,7 +274,7 @@ func processOrderedMap(omp *orderedmap.OrderedMap, config *Config) {
 	}
 }
 
-func isSensitiveKey(key string, sensitiveKeys ...string) bool {
+func IsSensitiveKey(key string, sensitiveKeys ...string) bool {
 	if len(sensitiveKeys) == 0 {
 		sensitiveKeys = DefaultMaskingKey
 	}

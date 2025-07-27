@@ -160,9 +160,6 @@ func maskRecursive(val reflect.Value, visited map[uintptr]bool, configs ...*Conf
 		if val.IsNil() {
 			return nil
 		}
-		if val.IsNil() {
-			return nil
-		}
 		newMap := reflect.MakeMap(val.Type())
 		for _, key := range val.MapKeys() {
 			keyStr := fmt.Sprintf("%v", key.Interface())

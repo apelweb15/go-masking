@@ -1,0 +1,55 @@
+# Output directories
+bin/
+build/
+dist/
+out/
+
+# Dependency directories
+vendor/
+
+# Go build directories
+pkg/
+.go-build/
+
+# Test and coverage files
+*.out
+*.test
+*.cover
+
+# Logs
+logs/
+*.log
+
+# IDEs and editors
+# Visual Studio Code
+.vscode/
+
+# JetBrains GoLand
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Other editor directories
+*.swp
+*.swo
+*.swn
+*.swn~
+
+# Go module cache
+pkg/mod/
+
+# Misc
+*.bak
+*.tmp
+*.temp
+
+config.yaml
+playground

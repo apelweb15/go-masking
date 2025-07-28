@@ -246,16 +246,13 @@ func processOrderedMap(omp *orderedmap.OrderedMap, config *Config) {
 
 		switch v := val.(type) {
 		case string:
-			fmt.Printf("processing key str %v, with val: %v, type:%v\n", key, val, v)
 			if IsSensitiveKey(key, config.MaskingKeys...) {
 				omp.Set(key, MaskString(v, config))
 			}
 
 		case *orderedmap.OrderedMap:
-			fmt.Printf("processing key orderedmap %v, with val: %v, type:%v\n", key, val, v)
 			processOrderedMap(v, config)
 		case map[string]interface{}:
-			fmt.Printf("processing key map[string]interface %v, with val: %v, type:%v\n", key, val, v)
 			nested := orderedmap.New()
 			for nk, nv := range v {
 				nested.Set(nk, nv)

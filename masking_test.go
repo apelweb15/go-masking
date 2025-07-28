@@ -436,4 +436,24 @@ func TestMaskSensitive(t *testing.T) {
 		fmt.Println(result)
 	}
 
+	result = MaskSensitive(map[string][]interface{}{
+		"Accept": []interface{}{
+			"application/json",
+		},
+		"Accept-Encoding": []interface{}{
+			"application/json",
+		},
+		"Authorization": []interface{}{
+			"Bearer 123456",
+		},
+		"X-Signature": []interface{}{
+			"efdsacsdcsd",
+		},
+	})
+	if c, ok := result.(map[string][]interface{}); ok {
+		fmt.Println(c)
+	} else {
+		t.Fatalf("expected: %v, got: %v", "string", result)
+	}
+
 }

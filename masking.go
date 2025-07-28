@@ -66,8 +66,12 @@ func MaskString(input string, configs ...*Config) string {
 }
 
 func MaskSensitive(data interface{}, configs ...*Config) interface{} {
+	config := MaskConfig
+	if len(configs) > 0 {
+		config = configs[0]
+	}
 	visited := map[uintptr]bool{}
-	result := maskRecursive(reflect.ValueOf(data), visited, configs...)
+	result := maskRecursive(reflect.ValueOf(data), visited, "", config)
 	rv := reflect.ValueOf(result)
 	for rv.Kind() == reflect.Ptr {
 		if rv.IsNil() {
@@ -83,11 +87,7 @@ func MaskSensitive(data interface{}, configs ...*Config) interface{} {
 	return rv.Interface()
 }
 
-func maskRecursive(val reflect.Value, visited map[uintptr]bool, configs ...*Config) interface{} {
-	config := MaskConfig
-	if len(configs) > 0 {
-		config = configs[0]
-	}
+func maskRecursive(val reflect.Value, visited map[uintptr]bool, parentKey string, config *Config) interface{} {
 	if !val.IsValid() {
 		return nil
 	}
@@ -110,7 +110,7 @@ func maskRecursive(val reflect.Value, visited map[uintptr]bool, configs ...*Conf
 		visited[ptr] = true
 
 		newPtr := reflect.New(val.Elem().Type())
-		maskedElem := maskRecursive(val.Elem(), visited, config)
+		maskedElem := maskRecursive(val.Elem(), visited, "", config)
 		safeSet(newPtr.Elem(), maskedElem)
 		return newPtr.Interface()
 	}
@@ -118,7 +118,7 @@ func maskRecursive(val reflect.Value, visited map[uintptr]bool, configs ...*Conf
 	switch val.Kind() {
 
 	case reflect.Interface:
-		return maskRecursive(val.Elem(), visited, config)
+		return maskRecursive(val.Elem(), visited, parentKey, config)
 
 	case reflect.Struct:
 		newStruct := reflect.New(val.Type()).Elem()
@@ -150,7 +150,7 @@ func maskRecursive(val reflect.Value, visited map[uintptr]bool, configs ...*Conf
 				continue
 			}
 
-			maskedVal := maskRecursive(fieldVal, visited, config)
+			maskedVal := maskRecursive(fieldVal, visited, "", config)
 			safeSet(newStruct.Field(i), maskedVal)
 
 		}
@@ -188,7 +188,7 @@ func maskRecursive(val reflect.Value, visited map[uintptr]bool, configs ...*Conf
 				continue
 			}
 
-			maskedVal := maskRecursive(valField, visited, config)
+			maskedVal := maskRecursive(valField, visited, keyStr, config)
 			fv := reflect.ValueOf(maskedVal)
 			if fv.IsValid() && fv.Type().AssignableTo(val.Type().Elem()) {
 				newMap.SetMapIndex(key, fv)
@@ -204,7 +204,7 @@ func maskRecursive(val reflect.Value, visited map[uintptr]bool, configs ...*Conf
 		}
 		newSlice := reflect.MakeSlice(val.Type(), val.Len(), val.Cap())
 		for i := 0; i < val.Len(); i++ {
-			maskedElem := maskRecursive(val.Index(i), visited, config)
+			maskedElem := maskRecursive(val.Index(i), visited, parentKey, config)
 			safeSet(newSlice.Index(i), maskedElem)
 		}
 		return newSlice.Interface()
@@ -217,6 +217,11 @@ func maskRecursive(val reflect.Value, visited map[uintptr]bool, configs ...*Conf
 			b, err := json.Marshal(omp)
 			if err == nil {
 				return string(b)
+			}
+		}
+		if len(parentKey) > 0 {
+			if IsSensitiveKey(parentKey, config.MaskingKeys...) {
+				return MaskString(val.String(), config)
 			}
 		}
 		return val.String()

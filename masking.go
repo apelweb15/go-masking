@@ -213,10 +213,12 @@ func maskRecursive(val reflect.Value, visited map[uintptr]bool, parentKey string
 
 		omp := orderedmap.New()
 		if err := json.Unmarshal([]byte(val.String()), &omp); err == nil {
-			processOrderedMap(omp, config)
-			b, err := json.Marshal(omp)
-			if err == nil {
-				return string(b)
+			if omp != nil {
+				processOrderedMap(omp, config)
+				b, err := json.Marshal(omp)
+				if err == nil {
+					return string(b)
+				}
 			}
 		}
 		if len(parentKey) > 0 {
